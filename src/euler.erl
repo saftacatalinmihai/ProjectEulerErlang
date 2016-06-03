@@ -26,7 +26,10 @@ hasAmicable(N) ->
 euler21() ->
   lists:sum([X || X <- lists:seq(1,10000), hasAmicable(X)]).
 
-test() ->
+euler20_test() ->
   648 = euler20(),
+  ok.
+
+euler21_test() ->
   31626 = euler21(),
-  io:fwrite(ok).
+  ok.
