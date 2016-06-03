@@ -26,6 +26,12 @@ hasAmicable(N) ->
 euler21() ->
   lists:sum([X || X <- lists:seq(1,10000), hasAmicable(X)]).
 
+euler22() ->
+  {ok, Data} = file:read_file("../p022_names.txt"),
+  NamesBin = binary:split(Data, [<<",">>], [global]),
+  lists:map(fun(X) -> binary:bin_to_list(binary:replace(X, <<"\"">>, <<"">>)) end,  NamesBin).
+
+
 euler20_test() ->
   648 = euler20(),
   ok.
