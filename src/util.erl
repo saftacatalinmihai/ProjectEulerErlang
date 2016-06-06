@@ -9,7 +9,7 @@
 -module(util).
 -author("casafta").
 -compile(export_all).
-
+-import(lists, [map/2, foldl/3, filter/2, seq/2, sum/1]).
 %% Sum of digits
 %% Ex: 123 ->  1 + 2 + 3 = 6
 sumDigits(N) -> sumDigits(N, 0).
@@ -22,9 +22,20 @@ fact(N) -> fact(N, 1).
 fact(1, Acc) -> Acc;
 fact(N, Acc) -> fact(N - 1, N*Acc).
 
-properDivs(N) -> properDivs(N, 2, gb_sets:new()).
-properDivs(N, ToTest, Divs) when ToTest >= N div 2 -> [1 |gb_sets:to_list(Divs)];
-properDivs(N, ToTest, Divs) when N rem ToTest =:= 0 -> properDivs(N, ToTest + 1, gb_sets:add(ToTest, gb_sets:add(N div ToTest, Divs)));
-properDivs(N, ToTest, Divs) -> properDivs(N , ToTest + 1, Divs).
+sumOfProperDivs(N) -> sum(properDivs(N)).
 
-sumOfProperDivs(N) -> lists:sum(properDivs(N)).
+isPerfect(N) ->sum(properDivs(N)) =:= N.
+isAbundant(N) ->sum(properDivs(N)) > N.
+isDeficient(N) ->sum(properDivs(N)) =< N.
+
+abundantList() ->
+  filter(fun(X) -> util:isAbundant(X) end,seq(1, 28123)).
+properDivs(N) ->
+  L = gb_sets:to_list(
+    foldl(
+      fun(X, Acc) -> gb_sets:add(X, gb_sets:add(N div X, Acc)) end,
+      gb_sets:new(),
+      filter(
+        fun(X) -> N rem X =:= 0 end,
+        seq(1, trunc(math:sqrt(N)))))),
+  lists:sublist(L, length(L) - 1).
