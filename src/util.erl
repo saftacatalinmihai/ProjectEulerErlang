@@ -39,3 +39,14 @@ properDivs(N) ->
         fun(X) -> N rem X =:= 0 end,
         seq(1, trunc(math:sqrt(N)))))),
   lists:sublist(L, length(L) - 1).
+
+check(_, _, []) -> false;
+check(_, [], _) -> false;
+check(N, L1, L2) when hd(L1) + hd(L2) =:= N  -> true;
+check(N, L1, L2) when hd(L1) + hd(L2) > N  -> check(N, L1, tl(L2));
+check(N, L1, L2) when hd(L1) + hd(L2) < N  -> check(N, tl(L1), L2).
+
+isSumOfAbundantNums(N, AbundantNums) ->
+%%  AbundantNums = abundantList(),
+  ReverseAbundant = lists:reverse(AbundantNums),
+  check(N, AbundantNums, ReverseAbundant).
