@@ -32,6 +32,7 @@ euler22() ->
   lists:map(fun(X) -> binary:bin_to_list(binary:replace(X, <<"\"">>, <<"">>)) end,  NamesBin).
 
 
+
 euler20_test() ->
   648 = euler20(),
   ok.
