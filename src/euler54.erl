@@ -105,16 +105,41 @@ readlines(FileName) ->
 get_all_lines(Device, Accum) ->
   case io:get_line(Device, "") of
     eof  -> file:close(Device), Accum;
-    Line -> get_all_lines(Device, Accum ++ [Line])
+    Line -> get_all_lines(Device, Accum ++ [line_to_hand_pairs(Line)])
   end.
 
-list_to_hands (Line) ->
-  [C1N, C1S, 32] = Line.
+parse_num(N) ->
+  case string:to_integer(N) of
+    {error, _} -> parse_high_card(N);
+    {Nr, _} -> Nr
+  end.
+
+parse_high_card(Hc) ->
+  case Hc of
+    "T" -> 10;  %% T
+    "J" -> 11;  %% J
+    "Q" -> 12;  %% Q
+    "K" -> 13;  %% K
+    "A" -> 14   %% A
+  end.
+
+line_to_hand_pairs(Line) ->
+  [ C1N, C1S, 32, C2N, C2S, 32, C3N, C3S, 32, C4N, C4S, 32, C5N, C5S, 32,
+    C6N, C6S, 32, C7N, C7S, 32, C8N, C8S, 32, C9N, C9S, 32, C10N, C10S | _] = Line,
+  Nums =   map(fun parse_num/1, string:tokens([C1N, 32, C2N, 32, C3N, 32, C4N, 32, C5N, 32 , C6N, 32, C7N, 32, C8N, 32, C9N, 32, C10N], " ")),
+  Suites = string:tokens([C1S, 32, C2S, 32, C3S, 32, C4S, 32, C5S, 32, C6S, 32, C7S, 32, C8S, 32, C9S, 32, C10S], " "),
+  lists:split(5, lists:zip(Nums, Suites)).
 
 
 
 euler54() ->
-  {2, d}.
+  Hands = euler54:readlines("p054_poker.txt"),
+  length(
+    lists:filter(
+      fun ({H1, H2}) ->
+        hand_value(H1) >= hand_value(H2)
+      end,
+      Hands)).
 
 isFlush_test() ->
     Hand = [{2, d}, {5, d}, {8, d}, {6, d}, {12, d} ],
@@ -156,3 +181,20 @@ hand_value_test() ->
   H9 = [{2,d}, {2,d}, {4,c}, {4,d}, {4,s}],
   H10 = [{3,c}, {3,d}, {3,s}, {9,s}, {9,d}],
   ?assertEqual(hand_value(H9) > hand_value(H10), true).
+
+read_line_test() ->
+  {H1, H2} = line_to_hand_pairs("5H 5C 6S 7S KD 2C 3S 8S 8D TD\n"),
+  ?assertEqual(hand_value(H1) < hand_value(H2), true),
+
+  {H3, H4} = line_to_hand_pairs("5D 8C 9S JS AC 2C 5C 7D 8S QH\n"),
+  ?assertEqual(hand_value(H3) > hand_value(H4), true),
+
+  {H5, H6} = line_to_hand_pairs("2D 9C AS AH AC 3D 6D 7D TD QD\n"),
+  ?assertEqual(hand_value(H5) < hand_value(H6), true),
+
+  {H7, H8} = line_to_hand_pairs("4D 6S 9H QH QC 3D 6D 7H QD QS\n"),
+  ?assertEqual(hand_value(H7) > hand_value(H8), true),
+
+  {H9, H10} = line_to_hand_pairs("2H 2D 4C 4D 4S 3C 3D 3S 9S 9D\n"),
+  ?assertEqual(hand_value(H9) > hand_value(H10), true).
+
