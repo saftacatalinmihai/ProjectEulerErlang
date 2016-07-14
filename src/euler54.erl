@@ -17,20 +17,33 @@
 -import(lists, [map/2, sort/1, sort/2, all/2, reverse/1]).
 
 hand_nums(Hand) ->
-  sort(map( fun ({N, _S}) -> N end, Hand)).
+  sort(map( fun ({N, _}) -> N end, Hand)).
 
 max_card(Hand) ->
   hd(lists:reverse(euler54:hand_nums(Hand))).
 
 hand_suites(Hand) ->
-  map( fun ({_N, S}) -> S end, Hand).
+  map( fun ({_, S}) -> S end, Hand).
 
-isFlush([{_N,S} | RestCards]) ->
-  all(fun({_N1,S1}) -> S =:= S1 end, RestCards).
+isFlush([{_,S} | RestCards]) ->
+  all(fun({_,S1}) -> S =:= S1 end, RestCards).
 
 isStraight(Hand) ->
-  [First | Rest] = hand_nums(Hand),
-  lists:seq(First, First + length(Rest)) =:= [First | Rest].
+  Nums = hand_nums(Hand),
+  Nums2 = sort(map(
+    fun(N) ->
+      case N =:= 14 of
+        true -> 1;
+        false -> N
+      end
+    end,
+    Nums
+  )),
+  IsStraight = fun ([H|T]) ->
+              lists:seq(H, H + length(T)) =:= [H | T]
+            end,
+
+  IsStraight(Nums) or IsStraight(Nums2).
 
 isStraightFlush(Hand) -> isStraight(Hand) and isFlush(Hand).
 
@@ -51,9 +64,9 @@ groups(Hand) ->
 hand_value(Hand) ->
 
   HandValue = case groups(Hand) of
-    [{4, [{N, _} | _]}, _] -> {four_of_a_kind, N};
+    [{4, [{N, _} | _]}, {1, [{N2, _}]}] -> {four_of_a_kind, {N, N2}};
     [{3, [{N, _} | _]}, {2, [{N2,_} | _]}] -> {full_house, {N, N2}};
-    [{3, [{N, _} | _]}, {1, [{N2,_}]}, {2, [{N2,_} ]}] -> {three_of_a_kind, {N, N2}};
+    [{3, [{N, _} | _]}, {1, [{N2,_}]}, {1, [{N3,_} ]}] -> {three_of_a_kind, {N, N2, N3}};
     [{2, [{N1, _}| _]}, {2, [{N2, _} | _]}, {1, [{N3, _}]}] -> {two_pairs, {N1, N2, N3}};
     [{2, [{N1, _} | _]}, {1, [{N2, _} | _]}, {1, [{N3, _} | _]}, {1, [{N4, _} | _]}] -> {one_pair, {N1, N2, N3, N4}};
                 _ -> {nothing, 0}
@@ -72,30 +85,30 @@ hand_value(Hand) ->
       },
 
   if RoyalFlush ->
-        [9];
+        [10];
      StraightFlush ->
-       [8, hand_nums(Hand)];
+       [9, hand_nums(Hand)];
      FourOAK ->
-       {four_of_a_kind, NN} = HandValue,
-       [7, NN];
+       {four_of_a_kind, {NN, NN2}} = HandValue,
+       [8, NN, NN2];
      FullHouse ->
        {full_house, {NN, NN2}} = HandValue,
-       [6, NN, NN2];
+       [7, NN, NN2];
      Flush ->
-       [5, max_card(Hand)];
+       [6, max_card(Hand)];
      Straight ->
-       [4, max_card(Hand)];
+       [5, max_card(Hand)];
      ThreeOAK ->
-       {three_of_a_kind, {NN, NN2}} = HandValue,
-       [3, NN, NN2];
+       {three_of_a_kind, {NN, NN2, NN3}} = HandValue,
+       [4, NN] ++ reverse(sort([NN2, NN3]));
      TwoPairs ->
        {two_pairs, {NN1, NN2, NN3}} = HandValue,
-       [2] ++ reverse(sort([NN1, NN2])) ++ [NN3];
+       [3] ++ reverse(sort([NN1, NN2])) ++ [NN3];
       OnePair ->
        {one_pair, {NN1, NN2, NN3, NN4}} = HandValue,
-       [1, NN1] ++ reverse(sort([NN2, NN3, NN4]));
+       [2, NN1] ++ reverse(sort([NN2, NN3, NN4]));
      true ->
-       [0] ++ reverse(hand_nums(Hand))
+       [1] ++ reverse(hand_nums(Hand))
   end.
 
 readlines(FileName) ->
@@ -130,8 +143,6 @@ line_to_hand_pairs(Line) ->
   Suites = string:tokens([C1S, 32, C2S, 32, C3S, 32, C4S, 32, C5S, 32, C6S, 32, C7S, 32, C8S, 32, C9S, 32, C10S], " "),
   lists:split(5, lists:zip(Nums, Suites)).
 
-
-
 euler54() ->
   Hands = euler54:readlines("p054_poker.txt"),
   length(
@@ -140,6 +151,9 @@ euler54() ->
         hand_value(H1) >= hand_value(H2)
       end,
       Hands)).
+
+euler54_test() ->
+  ?assertEqual(euler54(), 376).
 
 isFlush_test() ->
     Hand = [{2, d}, {5, d}, {8, d}, {6, d}, {12, d} ],
@@ -196,5 +210,7 @@ read_line_test() ->
   ?assertEqual(hand_value(H7) > hand_value(H8), true),
 
   {H9, H10} = line_to_hand_pairs("2H 2D 4C 4D 4S 3C 3D 3S 9S 9D\n"),
-  ?assertEqual(hand_value(H9) > hand_value(H10), true).
+  ?assertEqual(hand_value(H9) > hand_value(H10), true),
 
+  {H11, H12} = line_to_hand_pairs("AH 2D 3C 4D 5S 3C 3D 3S 5S 9D\n"),
+  ?assertEqual(hand_value(H11) > hand_value(H12), true).
