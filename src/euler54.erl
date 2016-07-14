@@ -63,7 +63,7 @@ groups(Hand) ->
 
 hand_value(Hand) ->
 
-  HandValue = case groups(Hand) of
+  HandKind = case groups(Hand) of
     [{4, [{N, _} | _]}, {1, [{N2, _}]}] -> {four_of_a_kind, {N, N2}};
     [{3, [{N, _} | _]}, {2, [{N2,_} | _]}] -> {full_house, {N, N2}};
     [{3, [{N, _} | _]}, {1, [{N2,_}]}, {1, [{N3,_} ]}] -> {three_of_a_kind, {N, N2, N3}};
@@ -75,40 +75,36 @@ hand_value(Hand) ->
   {RoyalFlush, StraightFlush, FourOAK, FullHouse, Flush, Straight, ThreeOAK, TwoPairs, OnePair} =
     { isRoyalFlush(Hand),
       isStraightFlush(Hand),
-      element(1, HandValue) =:= four_of_a_kind,
-      element(1, HandValue) =:= full_house,
+      element(1, HandKind) =:= four_of_a_kind,
+      element(1, HandKind) =:= full_house,
       isFlush(Hand),
       isStraight(Hand),
-      element(1, HandValue) =:= three_of_a_kind,
-      element(1, HandValue) =:= two_pairs,
-      element(1, HandValue) =:= one_pair
+      element(1, HandKind) =:= three_of_a_kind,
+      element(1, HandKind) =:= two_pairs,
+      element(1, HandKind) =:= one_pair
       },
 
-  if RoyalFlush ->
-        [10];
-     StraightFlush ->
-       [9, hand_nums(Hand)];
+  if RoyalFlush ->      [10];
+     StraightFlush ->   [9, hand_nums(Hand)];
      FourOAK ->
-       {four_of_a_kind, {NN, NN2}} = HandValue,
-       [8, NN, NN2];
+                        {four_of_a_kind, {NN, NN2}} = HandKind,
+                        [8, NN, NN2];
      FullHouse ->
-       {full_house, {NN, NN2}} = HandValue,
-       [7, NN, NN2];
-     Flush ->
-       [6, max_card(Hand)];
-     Straight ->
-       [5, max_card(Hand)];
+                        {full_house, {NN, NN2}} = HandKind,
+                        [7, NN, NN2];
+     Flush ->           [6, max_card(Hand)];
+     Straight ->        [5, max_card(Hand)];
      ThreeOAK ->
-       {three_of_a_kind, {NN, NN2, NN3}} = HandValue,
-       [4, NN] ++ reverse(sort([NN2, NN3]));
+                        {three_of_a_kind, {NN, NN2, NN3}} = HandKind,
+                        [4, NN] ++ reverse(sort([NN2, NN3]));
      TwoPairs ->
-       {two_pairs, {NN1, NN2, NN3}} = HandValue,
-       [3] ++ reverse(sort([NN1, NN2])) ++ [NN3];
-      OnePair ->
-       {one_pair, {NN1, NN2, NN3, NN4}} = HandValue,
-       [2, NN1] ++ reverse(sort([NN2, NN3, NN4]));
-     true ->
-       [1] ++ reverse(hand_nums(Hand))
+                        {two_pairs, {NN1, NN2, NN3}} = HandKind,
+                        [3] ++ reverse(sort([NN1, NN2])) ++ [NN3];
+     OnePair ->
+                        {one_pair, {NN1, NN2, NN3, NN4}} = HandKind,
+                        [2, NN1] ++ reverse(sort([NN2, NN3, NN4]));
+
+     true ->            [1] ++ reverse(hand_nums(Hand))
   end.
 
 readlines(FileName) ->
@@ -129,11 +125,11 @@ parse_num(N) ->
 
 parse_high_card(Hc) ->
   case Hc of
-    "T" -> 10;  %% T
-    "J" -> 11;  %% J
-    "Q" -> 12;  %% Q
-    "K" -> 13;  %% K
-    "A" -> 14   %% A
+    "T" -> 10;
+    "J" -> 11;
+    "Q" -> 12;
+    "K" -> 13;
+    "A" -> 14
   end.
 
 line_to_hand_pairs(Line) ->
