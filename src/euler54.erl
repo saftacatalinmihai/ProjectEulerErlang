@@ -144,7 +144,7 @@ euler54() ->
   length(
     lists:filter(
       fun ({H1, H2}) ->
-        hand_value(H1) >= hand_value(H2)
+        hand_value(H1) > hand_value(H2)
       end,
       Hands)).
 
