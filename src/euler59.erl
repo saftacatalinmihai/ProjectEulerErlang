@@ -9,10 +9,14 @@
 -module(euler59).
 -author("mihai").
 
-%% API
-%%-export([get_cipher/0, decode/2]).
+-include_lib("eunit/include/eunit.hrl").
 
 -compile(export_all).
+
+euler59_test() ->
+  C = get_cipher(),
+  [Found | _] = euler59:filter_english(euler59:try_all_keys(C)),
+  107359 = lists:sum(Found).
 
 read_cipher() ->
   {ok, Io} = file:open("p059_cipher.txt", [read]),
@@ -46,3 +50,13 @@ only_ascii_chars(Decoded) ->
     end,
     Decoded
   ).
+
+filter_english(Decoded) ->
+  lists:filter(
+    fun(L) -> contain_word("the", L) end,
+    Decoded
+  ).
+
+contain_word(Word, Str) ->
+  lists:member(Word, string:tokens(Str, " ")).
+
