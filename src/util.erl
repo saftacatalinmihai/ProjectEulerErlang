@@ -10,6 +10,7 @@
 -author("casafta").
 -compile(export_all).
 -import(lists, [map/2, foldl/3, filter/2, seq/2, sum/1]).
+
 %% Sum of digits
 %% Ex: 123 ->  1 + 2 + 3 = 6
 sumDigits(N) -> sumDigits(N, 0).
@@ -50,3 +51,10 @@ isSumOfAbundantNums(N, AbundantNums) ->
 %%  AbundantNums = abundantList(),
   ReverseAbundant = lists:reverse(AbundantNums),
   check(N, AbundantNums, ReverseAbundant).
+
+isPrime(X) -> length(properDivs(X)) =:= 1.
+nextPrime(X) ->
+  case isPrime(X + 2) of
+    true -> X + 2;
+    false -> nextPrime(X + 2)
+  end.
