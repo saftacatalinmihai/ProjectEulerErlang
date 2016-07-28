@@ -18,6 +18,9 @@ euler59_test() ->
   [Found | _] = euler59:filter_english(euler59:try_all_keys(C)),
   107359 = lists:sum(Found).
 
+all_ascii() ->
+  io:format("~p~n", [only_ascii_chars(try_all_keys(get_cipher()))]).
+
 read_cipher() ->
   {ok, Io} = file:open("p059_cipher.txt", [read]),
   {ok, Str} = file:read_line(Io),
