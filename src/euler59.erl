@@ -41,14 +41,14 @@ decode(_, []) -> [];
 decode([K,E,Y], [C|R]) -> [ C bxor K | decode([E,Y,K], R)].
 
 try_all_keys(Cipher) ->
-  Keys = [[A,B,C] || A <- lists:seq(97,122), B <- lists:seq(97,122), C <- lists:seq(97,122) ],
+  Keys = [[A,B,C] || A <- lists:seq($a,$z), B <- lists:seq($a,$z), C <- lists:seq($a,$z) ],
   lists:map(fun(K) -> decode(K, Cipher) end, Keys).
 
 only_ascii_chars(Decoded) ->
   lists:filter(
     fun(L) ->
       lists:all(
-        fun(C) -> (C >= 32) and (126 >= C) end, L
+        fun(C) -> (C >= $ ) and ($~ >= C) end, L
       )
     end,
     Decoded
