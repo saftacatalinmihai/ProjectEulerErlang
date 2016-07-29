@@ -11,6 +11,14 @@
 
 -compile(export_all).
 
+-include_lib("eunit/include/eunit.hrl").
+
+euler60_test_4 () ->
+  find_first([[13,11,7,3]], #{}).
+
+euler60_test_5 () ->
+  find_first([[17, 13,11,7,3]], #{}).
+
 check([P1, P2], Cache) ->
   case maps:find([P1,P2], Cache) of
     {ok, Check} ->
@@ -39,17 +47,18 @@ check([P1, P2], Cache) ->
   end;
 
 check([P1, P2 | Rest], Cache) ->
-  case maps:find([P1,P2], Cache) of
+%%  io:format("Check ~p ~p ~n", [[P1, P2 | Rest], Cache] ),
+  case maps:find([P1, P2 | Rest], Cache) of
     {ok, Check_Found} ->
 %%      io:format("Hit2 ~p~p~n", [Check_Found,[P1, P2 | Rest]]),
       {Check_Found, Cache};
     _ ->
-      {Check1, _Cache1} = check([P1,P2], Cache),
-      {Check2, _Cache2} = check([P2 | Rest], Cache),
-      {Check3, _Cache3} = check([P1 | Rest], Cache),
+      {Check1, Cache1} = check([P1,P2], Cache),
+      {Check2, Cache2} = check([P2 | Rest], Cache1),
+      {Check3, Cache3} = check([P1 | Rest], Cache2),
 
       Check = Check1 and Check2 and Check3,
-      {Check, maps:put([P1, P2 | Rest], Check, Cache)}
+      {Check, maps:put([P1, P2 | Rest], Check, Cache3)}
   end.
 
 
