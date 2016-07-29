@@ -58,3 +58,9 @@ nextPrime(X) ->
     true -> X + 2;
     false -> nextPrime(X + 2)
   end.
+
+nextPrime(X, Primes) ->
+  [P1|_] = lists:dropwhile(fun(P) -> P =< X  end, Primes),
+  P1.
+
+primes_to(N) -> [A || A <- lists:seq(2,N), isPrime(A)].
