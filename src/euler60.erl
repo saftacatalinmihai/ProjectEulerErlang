@@ -135,3 +135,103 @@ find_first2(PrimesList, Max, Primes) ->
 %%    0 -> find_first(Candidates, C3);
 %%    _ -> Found
 %%  end.
+
+check2(PrimeToList, P1, P2) ->
+  lists:member(P2, maps:get(P2, P1)).
+
+build(PrimesToList, Prime, []) -> PrimesToList;
+
+build(PrimesToList, Prime, [P|R]) when P < Prime ->
+  build(PrimesToList, Prime, R);
+
+build(PrimesToList, Prime, [P|R]) ->
+  L = maps:get(Prime, PrimesToList, []),
+
+  case check([Prime, P]) of
+    true -> build(maps:put(Prime, L ++ [P], PrimesToList), Prime, R);
+    false -> build(PrimesToList, Prime, R)
+  end.
+
+valid(Prime, [], Acc) ->
+    sets:from_list(Acc);
+
+valid(Prime, [P|R], Acc)  when P < Prime ->
+  valid(Prime, R, Acc);
+
+valid(Prime, [P|R], Acc) ->
+    case check([Prime, P]) of
+         true -> valid(Prime, R, Acc ++ [P]);
+         false -> valid(Prime, R, Acc)
+    end.
+
+valid(Prime, Primes) ->
+    case ets:lookup(cache, Prime) of
+        [] ->
+            Valid = valid(Prime, Primes, []),
+            ets:insert(cache, {Prime, Valid}),
+            Valid;
+        [{Prime, Valid}] -> Valid
+    end.
+
+find_first3() ->
+    Primes = util:primes_to(10000),
+    ets:new(cache, [set, named_table]),
+
+    lists:flatmap(
+        fun (P1) ->
+            P1Valid = euler60:valid(P1, Primes),
+            lists:flatmap(
+                fun (P2) ->
+                    P2Valid = sets:intersection([euler60:valid(P2, Primes), P1Valid]),
+                    lists:flatmap(
+                        fun(P3) ->
+                            P3Valid = sets:intersection([euler60:valid(P3, Primes), P2Valid]),
+                            lists:flatmap(
+                                fun (P4) ->
+                                    P4Valid =  sets:intersection([euler60:valid(P4, Primes), P3Valid]),
+                                    lists:map(
+                                    fun(P5) ->
+                                        io:format("~p~n", [{P1,P2,P3,P4,P5}]),
+                                        {P1,P2,P3,P4,P5}
+                                    end,
+                                    sets:to_list(P4Valid))
+                                end,
+                                sets:to_list(P3Valid)
+                            )
+%                            lists:map(fun(P4) -> {P1,P2,P3,P4} end, sets:to_list(P3Valid))
+                        end,
+                        sets:to_list(P2Valid)
+                    )
+                end,
+                sets:to_list(P1Valid)
+            )
+        end,
+        Primes).
+
+
+
+%    [{P1,P2,P3,P4,P5} ||
+%        P1 <- Primes,
+%        P2 <- sets:to_list(euler60:valid(P1, Primes)),
+%        P3 <- sets:to_list(
+%                sets:intersection([
+%                    euler60:valid(P2, Primes),
+%                    euler60:valid(P1, Primes)
+%                ])
+%            ),
+%        P4 <- sets:to_list(
+%                sets:intersection([
+%                    euler60:valid(P3, Primes),
+%                    euler60:valid(P2, Primes),
+%                    euler60:valid(P1, Primes)
+%                ])
+%            ),
+%        P5 <- sets:to_list(
+%                sets:intersection([
+%                    euler60:valid(P4, Primes),
+%                    euler60:valid(P3, Primes),
+%                    euler60:valid(P2, Primes),
+%                    euler60:valid(P1, Primes)
+%                ])
+%            )
+%    ].
