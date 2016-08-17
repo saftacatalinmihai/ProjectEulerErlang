@@ -13,8 +13,8 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
-euler60_test() ->
-    {13,5197,5701,6733,8389} = find_first().
+test() ->
+     ?assertEqual({13,5197,5701,6733,8389}, find_first()).
 
 check(P1, P2) ->
         util:isPrime(
@@ -33,7 +33,7 @@ check(P1, P2) ->
               integer_to_list(P1)
             )
           )
-        );
+        ).
 
 valid(_, [], Acc) ->
     sets:from_list(Acc);

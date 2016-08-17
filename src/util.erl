@@ -64,3 +64,12 @@ nextPrime(X, Primes) ->
   P1.
 
 primes_to(N) -> [A || A <- lists:seq(2,N), isPrime(A)].
+
+polynomial_generator(F) ->
+    fun (Min, Max) ->
+        [ round(F(N)) || N <- lists:seq(1,Max), F(N) >= Min, F(N) =< Max ]
+     end.
+
+triangle(N) -> N*(N+1)/2.
+square(N) -> N*N.
+
