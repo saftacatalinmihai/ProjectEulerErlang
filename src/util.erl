@@ -17,11 +17,23 @@ sumDigits(N) -> sumDigits(N, 0).
 sumDigits(N, Acc) when N div 10 >= 1 -> sumDigits(N div 10, Acc + N rem 10);
 sumDigits(N, Acc) -> N + Acc.
 
+digits(N) -> digits(N, []).
+
+digits(N, Acc) when N div 10 >= 1 -> digits(N div 10, [ (N rem 10) | Acc]);
+digits(N, Acc) -> [N | Acc].
+
+digits_to_int(L) -> digits_to_int(L, 0).
+digits_to_int([], Acc) -> Acc;
+digits_to_int([H|T], Acc) -> digits_to_int(T, Acc * 10 + H).
+
 %% Factorial
 %% fact(4) -> 1 * 2 * 3 * 4 = 24
 fact(N) -> fact(N, 1).
 fact(1, Acc) -> Acc;
 fact(N, Acc) -> fact(N - 1, N*Acc).
+
+perms([]) -> [[]];
+perms(L)  -> [[H|T] || H <- L, T <- perms(L--[H])].
 
 sumOfProperDivs(N) -> sum(properDivs(N)).
 
