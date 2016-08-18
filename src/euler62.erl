@@ -13,37 +13,20 @@
 
 -include_lib("eunit/include/eunit.hrl").
 
-init() ->
-    ets:new(perms, [set, named_table]).
-
 test() ->
-     ?assertEqual(1, 1).
+    [{N,_}|_] = euler62:filter_number_of_cubes(4,euler62:cube_list_perms(euler62:cubes_to(9999))),
+    ?assertEqual(N, [1,2,7,0,3,5,9,5,4,6,8,3]).
 
 is_perm(A,B) ->
-    A_perms =   case ets:lookup(perms, A) of
-                    [] ->
-                        A_p = util:perms(A),
-                        ets:insert(perms, {A, A_p}),
-                        A_p;
-                    [{A, A_p}] -> A_p
-                end,
-
-    lists:member(
-        B,
-        A_perms
-    ) and (length(B) =:= length(A)).
+    lists:sort(A) =:= lists:sort(B).
 
 find_perms(X,L) ->
-%    io:format("Finding ~p in ~p ~n", [X,L]),
-    Found = find_perms(X,L,[]),
-%    io:format("Found: ~p~n", [Found]),
-    {X,Found}.
-
+    {X,find_perms(X,L,[])}.
 
 find_perms(_,[], Acc) -> Acc;
 find_perms(X,[H|T], Acc) ->
-    case is_perm(H,X) of
-        true -> find_perms(X, T, [H|Acc]);
+    case is_perm(X,H) of
+        true  -> find_perms(X, T, [H|Acc]);
         false -> find_perms(X, T, Acc)
     end.
 
@@ -61,10 +44,17 @@ cube_list_perms(L) ->
         cube_list_perms(L, [])
     ).
 
-
 cube_list_perms([], Acc) -> Acc;
 cube_list_perms([H|T], Acc) ->
     case find_perms(H,T) of
         [] -> cube_list_perms(T, Acc);
-        L  -> cube_list_perms(T, [L| Acc])
+        L  -> cube_list_perms(T, [L | Acc])
     end.
+
+filter_number_of_cubes(N,L) ->
+    lists:reverse(lists:filter(
+        fun ({_, P}) when length(P) =:= N -> true;
+            (_) -> false
+        end,
+        L
+    )).
